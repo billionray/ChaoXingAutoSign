@@ -88,8 +88,11 @@ def qiandao(url:str,address:str,sleepTime:int,SENDKEY:str):
         for activeID in activeDetail:
             global id
             id=re.findall(r'activeDetail\((.*?),',activeID)
-            enc=session.get('https://mobilelearn.chaoxing.com/v2/apis/sign/refreshQRCode?activeId={id}'.format(id=id[0])).json()['data']['enc']
+            enc=''
+            data=session.get('https://mobilelearn.chaoxing.com/v2/apis/sign/refreshQRCode?activeId={id}'.format(id=id[0])).json()['data']
 
+            if data !=None:
+                enc=data['enc']
             #print(enc)
             
             url='https://mobilelearn.chaoxing.com/pptSign/stuSignajax?activeId={id}&clientip=&latitude=-1&longitude=-1&appType=15&fid=0&enc={enc}&address={address}'.format(id=id[0],enc=enc,address=address)
@@ -100,6 +103,8 @@ def qiandao(url:str,address:str,sleepTime:int,SENDKEY:str):
             #print(url)
             print('**********')
             print(res.text)
+            if '非签到活动' in res.text:
+                continue
             if res.text=='success':
                 #server酱推送
                 requests.post('https://sctapi.ftqq.com/{sendkey}.send'.format(sendkey=SENDKEY), data={'text': "学习通-签到成功", 'desp': course_dict[currClass][0]+"签到成功"})
